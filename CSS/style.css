@@ -160,3 +160,24 @@ aside#results-section h2 {
   margin: 1rem auto 0;
   max-width: 100%;
 }
+/* ── about section ── */
+#about {
+  background-color: var(--butter);
+  border: 1.5px solid var(--butter-mid);
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* ── footer ── */
+footer {
+  background-color: var(--mint);
+  color: var(--white);
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  border-top: 3px solid var(--mint-dark);
+}
+The key structural decision that m
