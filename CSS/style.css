@@ -1,0 +1,38 @@
+body {
+  background-color: var(--mint-light);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ── header ── */
+header {
+  background-color: var(--mint);
+  color: var(--white);
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  border-bottom: 3px solid var(--mint-dark);
+}
+
+header img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  background-color: var(--mint-light);
+}
+
+header h1 {
+  font-family: var(--font-heading);
+  font-size: 1.9rem;
+  letter-spacing: 0.02em;
+}
+
+header p {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin-top: 0.2rem;
+}
