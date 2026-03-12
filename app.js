@@ -34,3 +34,124 @@ new Product('unicorn',        'img/unicorn.jpg');
 new Product('usb',            'img/usb.jpg');
 new Product('water-can',      'img/water-can.jpg');
 new Product('wine-glass',     'img/wine-glass.jpg');
+
+/ ── Phase 2: State variables ──────────────────────────────────────
+
+var lastShown = [];           // tracks previous round to avoid repeats
+var currentProducts = [];     // the 3 products currently displayed
+
+// ── Phase 4: Round tracking ───────────────────────────────────────
+
+var MAX_ROUNDS = 25;
+var roundCount = 0;
+
+// ── Phase 2: DOM references ───────────────────────────────────────
+
+var imgLeft   = document.getElementById('img-left');
+var imgCenter = document.getElementById('img-center');
+var imgRight  = document.getElementById('img-right');
+var imageSection   = document.getElementById('images');
+var resultsBtn     = document.getElementById('view-results-btn');
+var resetBtn       = document.getElementById('reset-btn');
+var resultsList    = document.getElementById('results-list');
+
+// ── Phase 2: showProducts() ───────────────────────────────────────
+
+function getRandomProduct(excluded) {
+  var randomIndex;
+  var candidate;
+  do {
+    randomIndex = Math.floor(Math.random() * Product.all.length);
+    candidate = Product.all[randomIndex];
+  } while (excluded.includes(candidate));
+  return candidate;
+}
+
+function showProducts() {
+  var picked = [];
+
+  var first = getRandomProduct(lastShown);
+  picked.push(first);
+
+  var second = getRandomProduct(lastShown.concat(picked));
+  picked.push(second);
+
+  var third = getRandomProduct(lastShown.concat(picked));
+  picked.push(third);
+
+  // update img elements
+  imgLeft.src   = picked[0].src;
+  imgLeft.alt   = picked[0].name;
+
+  imgCenter.src = picked[1].src;
+  imgCenter.alt = picked[1].name;
+
+  imgRight.src  = picked[2].src;
+  imgRight.alt  = picked[2].name;
+
+  // increment timesShown for each
+  picked[0].timesShown++;
+  picked[1].timesShown++;
+  picked[2].timesShown++;
+
+  // remember this round to avoid repeats next round
+  lastShown = picked;
+  currentProducts = picked;
+}
+
+// ── Phase 3: handleClick() ────────────────────────────────────────
+
+function handleClick(event) {
+  // ignore clicks that aren't on an image
+  if (event.target.tagName !== 'IMG') return;
+
+  // find which product was clicked by matching src
+  var clickedProduct = Product.all.find(function(product) {
+    return product.src === event.target.src;
+  });
+
+  if (clickedProduct) {
+    clickedProduct.timesClicked++;
+  }
+
+  // ── Phase 4: increment round, check if voting is over ──
+  roundCount++;
+
+  if (roundCount >= MAX_ROUNDS) {
+    endVoting();
+  } else {
+    showProducts();
+  }
+}
+
+// ── Phase 4: endVoting() ─────────────────────────────────────────
+
+function endVoting() {
+  imageSection.removeEventListener('click', handleClick);
+  imageSection.style.opacity = '0.4';
+  imageSection.style.pointerEvents = 'none';
+  resultsBtn.removeAttribute('hidden');
+  resetBtn.removeAttribute('hidden');
+}
+
+// ── Phase 5: renderResults() ──────────────────────────────────────
+
+function renderResults() {
+  resultsList.innerHTML = '';
+
+  Product.all.forEach(function(product) {
+    var percentage = product.timesShown > 0
+      ? Math.round((product.timesClicked / product.timesShown) * 100)
+      : 0;
+
+    var li = document.createElement('li');
+    li.textContent = product.name + ' — '
+      + product.timesClicked + ' votes, '
+      + 'seen ' + product.timesShown + ' times ('
+      + percentage + '%)';
+
+    resultsList.appendChild(li);
+  });
+
+  renderChart();
+}
