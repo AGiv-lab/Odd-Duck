@@ -1,6 +1,4 @@
-'use strict'
-
-document.getElementById('img1').src = randomProduct.src;
+'use strict';
 
 Product.all = [];
 
@@ -13,57 +11,54 @@ function Product(name, src) {
 }
 
 // ── Phase 1: Instantiate all products ────────────────────────────
+new Product('bag', 'img/bag.jpg');
+new Product('banana', 'img/banana.jpg');
+new Product('bathroom', 'img/bathroom.jpg');
+new Product('boots', 'img/boots.jpg');
+new Product('breakfast', 'img/breakfast.jpg');
+new Product('bubblegum', 'img/bubblegum.jpg');
+new Product('chair', 'img/chair.jpg');
+new Product('cthulhu', 'img/cthulhu.jpg');
+new Product('dog-duck', 'img/dog-duck.jpg');
+new Product('dragon', 'img/dragon.jpg');
+new Product('pen', 'img/pen.jpg');
+new Product('pet-sweep', 'img/pet-sweep.jpg');
+new Product('scissors', 'img/scissors.jpg');
+new Product('shark', 'img/shark.jpg');
+new Product('sweep', 'img/sweep.png');
+new Product('tauntaun', 'img/tauntaun.jpg');
+new Product('unicorn', 'img/unicorn.jpg');
+new Product('usb', 'img/usb.jpg');
+new Product('water-can', 'img/water-can.jpg');
+new Product('wine-glass', 'img/wine-glass.jpg');
 
-new Product('bag',            'img/bag.jpg');
-new Product('banana',         'img/banana.jpg');
-new Product('bathroom',       'img/bathroom.jpg');
-new Product('boots',          'img/boots.jpg');
-new Product('breakfast',      'img/breakfast.jpg');
-new Product('bubblegum',      'img/bubblegum.jpg');
-new Product('chair',          'img/chair.jpg');
-new Product('cthulhu',        'img/cthulhu.jpg');
-new Product('dog-duck',       'img/dog-duck.jpg');
-new Product('dragon',         'img/dragon.jpg');
-new Product('pen',            'img/pen.jpg');
-new Product('pet-sweep',      'img/pet-sweep.jpg');
-new Product('scissors',       'img/scissors.jpg');
-new Product('shark',          'img/shark.jpg');
-new Product('sweep',          'img/sweep.png');
-new Product('tauntaun',       'img/tauntaun.jpg');
-new Product('unicorn',        'img/unicorn.jpg');
-new Product('usb',            'img/usb.jpg');
-new Product('water-can',      'img/water-can.jpg');
-new Product('wine-glass',     'img/wine-glass.jpg');
-
-/ ── Phase 2: State variables ──────────────────────────────────────
-
-var lastShown = [];           // tracks previous round to avoid repeats
-var currentProducts = [];     // the 3 products currently displayed
+// ── Phase 2: State variables ──────────────────────────────────────
+var lastShown = [];
+var currentProducts = [];
 
 // ── Phase 4: Round tracking ───────────────────────────────────────
-
 var MAX_ROUNDS = 25;
 var roundCount = 0;
 
 // ── Phase 2: DOM references ───────────────────────────────────────
-
-var imgLeft   = document.getElementById('img-left');
+var imgLeft = document.getElementById('img-left');
 var imgCenter = document.getElementById('img-center');
-var imgRight  = document.getElementById('img-right');
-var imageSection   = document.getElementById('images');
-var resultsBtn     = document.getElementById('view-results-btn');
-var resetBtn       = document.getElementById('reset-btn');
-var resultsList    = document.getElementById('results-list');
+var imgRight = document.getElementById('img-right');
+var imageSection = document.getElementById('images');
+var resultsBtn = document.getElementById('view-results-btn');
+var resetBtn = document.getElementById('reset-btn');
+var resultsList = document.getElementById('results-list');
 
 // ── Phase 2: showProducts() ───────────────────────────────────────
-
 function getRandomProduct(excluded) {
   var randomIndex;
   var candidate;
+
   do {
     randomIndex = Math.floor(Math.random() * Product.all.length);
     candidate = Product.all[randomIndex];
   } while (excluded.includes(candidate));
+
   return candidate;
 }
 
@@ -79,42 +74,37 @@ function showProducts() {
   var third = getRandomProduct(lastShown.concat(picked));
   picked.push(third);
 
-  // update img elements
-  imgLeft.src   = picked[0].src;
-  imgLeft.alt   = picked[0].name;
+  imgLeft.src = picked[0].src;
+  imgLeft.alt = picked[0].name;
 
   imgCenter.src = picked[1].src;
   imgCenter.alt = picked[1].name;
 
-  imgRight.src  = picked[2].src;
-  imgRight.alt  = picked[2].name;
+  imgRight.src = picked[2].src;
+  imgRight.alt = picked[2].name;
 
-  // increment timesShown for each
   picked[0].timesShown++;
   picked[1].timesShown++;
   picked[2].timesShown++;
 
-  // remember this round to avoid repeats next round
   lastShown = picked;
   currentProducts = picked;
 }
 
 // ── Phase 3: handleClick() ────────────────────────────────────────
-
 function handleClick(event) {
-  // ignore clicks that aren't on an image
-  if (event.target.tagName !== 'IMG') return;
+  if (event.target.tagName !== 'IMG') {
+    return;
+  }
 
-  // find which product was clicked by matching src
   var clickedProduct = Product.all.find(function(product) {
-    return product.src === event.target.src;
+    return product.name === event.target.alt;
   });
 
   if (clickedProduct) {
     clickedProduct.timesClicked++;
   }
 
-  // ── Phase 4: increment round, check if voting is over ──
   roundCount++;
 
   if (roundCount >= MAX_ROUNDS) {
@@ -124,8 +114,7 @@ function handleClick(event) {
   }
 }
 
-// ── Phase 4: endVoting() ─────────────────────────────────────────
-
+// ── Phase 4: endVoting() ──────────────────────────────────────────
 function endVoting() {
   imageSection.removeEventListener('click', handleClick);
   imageSection.style.opacity = '0.4';
@@ -135,7 +124,6 @@ function endVoting() {
 }
 
 // ── Phase 5: renderResults() ──────────────────────────────────────
-
 function renderResults() {
   resultsList.innerHTML = '';
 
@@ -146,12 +134,39 @@ function renderResults() {
 
     var li = document.createElement('li');
     li.textContent = product.name + ' — '
-      + product.timesClicked + ' votes, '
-      + 'seen ' + product.timesShown + ' times ('
-      + percentage + '%)';
+      + product.timesClicked + ' votes, seen '
+      + product.timesShown + ' times (' + percentage + '%)';
 
     resultsList.appendChild(li);
   });
 
-  renderChart();
+  // renderChart();
 }
+
+// ── Reset ─────────────────────────────────────────────────────────
+function resetApp() {
+  roundCount = 0;
+  lastShown = [];
+  currentProducts = [];
+
+  Product.all.forEach(function(product) {
+    product.timesShown = 0;
+    product.timesClicked = 0;
+  });
+
+  resultsList.innerHTML = '';
+  resultsBtn.setAttribute('hidden', true);
+  resetBtn.setAttribute('hidden', true);
+  imageSection.style.opacity = '1';
+  imageSection.style.pointerEvents = 'auto';
+  imageSection.addEventListener('click', handleClick);
+
+  showProducts();
+}
+
+// ── Event listeners + startup ─────────────────────────────────────
+imageSection.addEventListener('click', handleClick);
+resultsBtn.addEventListener('click', renderResults);
+resetBtn.addEventListener('click', resetApp);
+
+showProducts();
