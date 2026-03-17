@@ -1,4 +1,4 @@
-avascript'use strict';
+'use strict';
 
 // ── Constructor ───────────────────────────────────────────────────────────────
 function Product(name, src) {
