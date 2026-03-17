@@ -1,6 +1,6 @@
-'use strict';
+avascript'use strict';
 
-// ── Constructor ──────────────────────────────────────────────────────────────
+// ── Constructor ───────────────────────────────────────────────────────────────
 function Product(name, src) {
   this.name = name;
   this.src = src;
@@ -8,7 +8,7 @@ function Product(name, src) {
   this.shown = 0;
 }
 
-// ── All products ─────────────────────────────────────────────────────────────
+// ── All products ──────────────────────────────────────────────────────────────
 Product.all = [
   new Product('bag',        'img/bag.jpg'),
   new Product('banana',     'img/banana.jpg'),
@@ -31,12 +31,20 @@ Product.all = [
   new Product('wine-glass', 'img/wine-glass.jpg'),
 ];
 
-// ── State ────────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
 const MAX_ROUNDS = 25;
 let roundsLeft = MAX_ROUNDS;
 let lastThree = [];
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Grab DOM elements once ────────────────────────────────────────────────────
+let imageSection   = document.getElementById('images');
+let viewResultsBtn = document.getElementById('view-results-btn');
+let resetBtn       = document.getElementById('reset-btn');
+let resultsList    = document.getElementById('results-list');
+let chartCanvas    = document.getElementById('myChart');
+let chartInstance  = null;
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function getRandomProduct() {
   return Product.all[Math.floor(Math.random() * Product.all.length)];
 }
@@ -45,7 +53,6 @@ function pickThreeUnique() {
   let picks = [];
   while (picks.length < 3) {
     let p = getRandomProduct();
-    // not already in this round, not in the last set shown
     if (!picks.includes(p) && !lastThree.includes(p)) {
       picks.push(p);
     }
@@ -67,16 +74,12 @@ function renderImages() {
   document.getElementById('img-right').alt  = picks[2].name;
 }
 
-// ── Handle a click on the images section ─────────────────────────────────────
-let imageSection = document.getElementById('images');
-
+// ── Vote handler ──────────────────────────────────────────────────────────────
 function handleVote(event) {
   let clicked = event.target;
-  if (clicked.tagName !== 'IMG') return;   // ignore clicks on whitespace
+  if (clicked.tagName !== 'IMG') return;
 
-  // find the product that matches this image's src
   let voted = Product.all.find(p => p.src === clicked.src.replace(location.origin + '/', ''));
-  // fallback: match by alt text (name)
   if (!voted) voted = Product.all.find(p => p.name === clicked.alt);
   if (voted) voted.clicks++;
 
@@ -86,56 +89,73 @@ function handleVote(event) {
     renderImages();
   } else {
     imageSection.removeEventListener('click', handleVote);
-    showResultsButton();
+    viewResultsBtn.hidden = false;
   }
 }
 
 imageSection.addEventListener('click', handleVote);
 
-// ── Results button ────────────────────────────────────────────────────────────
-function showResultsButton() {
-  let btn = document.createElement('button');
-  btn.textContent = 'View Results';
-  btn.id = 'results-btn';
-  imageSection.appendChild(btn);
-  btn.addEventListener('click', showResults);
-}
-
 // ── Show results ──────────────────────────────────────────────────────────────
 function showResults() {
-  let list = document.getElementById('results-list');
-  list.innerHTML = '';   // clear any previous content
+  resultsList.innerHTML = '';
 
   Product.all.forEach(p => {
     let li = document.createElement('li');
-    li.textContent = `${p.name} had ${p.clicks} votes, and was seen ${p.shown} times`;
-    list.appendChild(li);
+    li.textContent = `${p.name} had ${p.clicks} votes, and was seen ${p.shown} times.`;
+    resultsList.appendChild(li);
   });
 
-  // Chart.js bar chart
-  let canvas = document.getElementById('myChart');
-  if (canvas) {
-    let labels = Product.all.map(p => p.name);
-    let votes  = Product.all.map(p => p.clicks);
-    let seen   = Product.all.map(p => p.shown);
+  chartCanvas.hidden = false;
+  if (chartInstance) chartInstance.destroy();
 
-    new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          { label: 'Votes',     data: votes, backgroundColor: 'rgba(75, 192, 192, 0.6)' },
-          { label: 'Times Seen', data: seen, backgroundColor: 'rgba(153, 102, 255, 0.6)' }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: 'top' } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-  }
+  chartInstance = new Chart(chartCanvas, {
+    type: 'bar',
+    data: {
+      labels: Product.all.map(p => p.name),
+      datasets: [
+        {
+          label: 'Votes',
+          data: Product.all.map(p => p.clicks),
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+        },
+        {
+          label: 'Times Seen',
+          data: Product.all.map(p => p.shown),
+          backgroundColor: 'rgba(153, 102, 255, 0.6)',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { beginAtZero: true } },
+    },
+  });
+
+  viewResultsBtn.hidden = true;
+  resetBtn.hidden = false;
 }
 
-// ── Start the app ─────────────────────────────────────────────────────────────
+// ── Reset ─────────────────────────────────────────────────────────────────────
+function resetApp() {
+  Product.all.forEach(p => { p.clicks = 0; p.shown = 0; });
+  roundsLeft = MAX_ROUNDS;
+  lastThree = [];
+
+  resultsList.innerHTML = '';
+  chartCanvas.hidden = true;
+  resetBtn.hidden = true;
+  viewResultsBtn.hidden = true;
+
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+
+  imageSection.addEventListener('click', handleVote);
+  renderImages();
+}
+
+// ── Wire up buttons ───────────────────────────────────────────────────────────
+viewResultsBtn.addEventListener('click', showResults);
+resetBtn.addEventListener('click', resetApp);
+
+// ── Start ─────────────────────────────────────────────────────────────────────
 renderImages();
