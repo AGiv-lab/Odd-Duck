@@ -48,6 +48,8 @@ var imageSection = document.getElementById('images');
 var resultsBtn = document.getElementById('view-results-btn');
 var resetBtn = document.getElementById('reset-btn');
 var resultsList = document.getElementById('results-list');
+var canvas = document.getElementById('canvas');
+var chartInstance = null;
 
 // ── Phase 2: showProducts() ───────────────────────────────────────
 function getRandomProduct(excluded) {
@@ -124,6 +126,7 @@ function endVoting() {
 }
 
 // ── Phase 5: renderResults() ──────────────────────────────────────
+
 function renderResults() {
   resultsList.innerHTML = '';
 
@@ -140,7 +143,50 @@ function renderResults() {
     resultsList.appendChild(li);
   });
 
-  // renderChart();
+  renderChart(); // ✅ CORRECT PLACE (outside loop)
+}
+
+function renderChart() {
+  canvas.removeAttribute('hidden');
+
+  var productNames = [];
+  var votes = [];
+  var shown = [];
+
+  Product.all.forEach(function(product) {
+    productNames.push(product.name);
+    votes.push(product.timesClicked);
+    shown.push(product.timesShown);
+  });
+
+  var ctx = canvas.getContext('2d');
+
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: productNames,
+      datasets: [
+        {
+          label: 'Votes',
+          data: votes,
+          backgroundColor: '#5db89a'
+        },
+        {
+          label: 'Times Shown',
+          data: shown,
+          backgroundColor: '#e8c84a'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true
+    }
+  });
 }
 
 // ── Reset ─────────────────────────────────────────────────────────
@@ -157,11 +203,18 @@ function resetApp() {
   resultsList.innerHTML = '';
   resultsBtn.setAttribute('hidden', true);
   resetBtn.setAttribute('hidden', true);
+  canvas.setAttribute('hidden', true); // ← don’t forget this!
+
   imageSection.style.opacity = '1';
   imageSection.style.pointerEvents = 'auto';
   imageSection.addEventListener('click', handleClick);
 
-  showProducts();
+  if (chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
+  }
+
+  showProducts(); // ← run AFTER everything is reset
 }
 
 // ── Event listeners + startup ─────────────────────────────────────
